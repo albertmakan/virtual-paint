@@ -1,9 +1,17 @@
 import cv2
 import mediapipe as mp
 import numpy as np
-
+import os
+from sklearn.model_selection import train_test_split
+from keras.models import Sequential
+from keras.layers.convolutional import Conv2D, MaxPooling2D
+from keras.layers import Dense, Flatten
 import actions
 import create_dataset
+
+path = "../dataset/"
+types = ["choose", "draw", "erase", "move", "nothing", "select"]
+testSize = 0.15
 
 
 def draw_landmarks(hand_landmarks, image):
@@ -40,6 +48,52 @@ def dummy_network(landmark_list):
         return "choose"
     return "nothing"
 
+
+def readData():
+    labels = []
+    images = []
+    for i, type in enumerate(types):
+        folderPath = path + type
+        files = os.listdir(folderPath)
+        for file in files:
+            labels.append(i)
+            image = cv2.imread(folderPath + '/' + file)
+            images.append(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY))
+    imageNum = len(images)
+    images = np.array(images, dtype="uint8")
+    images = images.reshape(imageNum, 120, 120, 1)
+    labels = np.array(labels)
+    # print(images)
+    # print()
+    # print(labels)
+    return images, labels
+
+
+def modelCreation():
+    cnnModel = Sequential()
+    cnnModel.add(Conv2D(32, (5, 5), activation='relu', input_shape=(120, 120, 1)))
+    cnnModel.add(MaxPooling2D((2, 2)))
+
+    cnnModel.add(Conv2D(64, (3, 3), activation='relu'))
+    cnnModel.add(MaxPooling2D((2, 2)))
+
+    cnnModel.add(Conv2D(64, (3, 3), activation='relu'))
+    cnnModel.add(MaxPooling2D((2, 2)))
+    cnnModel.add(Flatten())
+
+    cnnModel.add(Dense(128, activation='relu'))
+    cnnModel.add(Dense(10, activation='softmax'))
+    cnnModel.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    return cnnModel
+
+
+def cnn():
+    images, labels = readData()
+    imagesTrain, imagesTest, labelsTrain, labelsTest = train_test_split(images, labels, test_size=testSize)
+    model = modelCreation()
+    model.fit(imagesTrain, labelsTrain, epochs=5, batch_size=64,
+              verbose=2)
+    return model.evaluate(imagesTest, labelsTest)
 
 def main():
     ca = actions.ChooseColorAction()
@@ -99,4 +153,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #main()
+    cnn()
