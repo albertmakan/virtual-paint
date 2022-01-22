@@ -145,6 +145,7 @@ class MoveAction(Action):
         xc, yc = landmark_coordinates[20]
         if self.xp == 0 and self.yp == 0 and not (self.select_action.x1 < xc < self.select_action.x2
                                                   and self.select_action.y1 < yc < self.select_action.y2):
+            print("AAAAAAAAAAAAA")
             return
         if self.area is None:
             self.area = canvases[0][self.select_action.y1:self.select_action.y2,
