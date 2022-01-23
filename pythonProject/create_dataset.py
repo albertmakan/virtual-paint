@@ -42,3 +42,6 @@ def main():
                 break
     capture.release()
     print(n)
+
+if __name__ == '__main__':
+    main()
