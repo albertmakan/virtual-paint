@@ -1,7 +1,7 @@
 import cv2
 
 
-def extract_hand(hand_landmarks, image, show=True):
+def extract_hand(hand_landmarks, image, gray=False, show=True):
     h, w, c = image.shape
     xs = [lm.x for lm in hand_landmarks.landmark]
     ys = [lm.y for lm in hand_landmarks.landmark]
@@ -23,6 +23,8 @@ def extract_hand(hand_landmarks, image, show=True):
     x1 = max(0, x1)
     y1 = max(0, y1)
     hand_img = cv2.resize(image[y1:y2, x1:x2], (120, 120))
+    if gray:
+        hand_img = cv2.cvtColor(hand_img, cv2.COLOR_BGR2GRAY)
     if show:
         cv2.rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), 3)
         cv2.imshow('cropped', hand_img)

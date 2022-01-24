@@ -16,7 +16,7 @@ def draw_landmarks(hand_landmarks, image):
         mp.solutions.drawing_styles.get_default_hand_connections_style())
 
 
-def main():
+def main(model_path: str, gray=False):
     ca = actions.ChooseColorAction()
     da = actions.DrawAction(ca)
     ea = actions.EraseAction()
@@ -26,7 +26,7 @@ def main():
     action_dict = {"draw": da, "erase": ea, "select": sa, "nothing": na, "move": ma, "choose": ca}
     labels = ["choose", "draw", "erase", "move", "nothing", "select"]
 
-    model = load_model("models/model-3conv")
+    model = load_model(model_path)
 
     capture = cv2.VideoCapture(0)
     capture.set(3, 1280)
@@ -61,9 +61,13 @@ def main():
 
                     lm_coords = [(int(lm.x * w), int(lm.y * h)) for lm in hand_landmarks.landmark]
 
-                    prediction = model(np.array([utils.extract_hand(hand_landmarks, image, False)]))
-                    a = labels[np.argmax(prediction[0])]
-                    print(a)
+                    prediction = model(np.array([utils.extract_hand(hand_landmarks, image, show=False, gray=gray)]))
+                    i = np.argmax(prediction[0])
+                    a = labels[i]
+                    prob = prediction[0][i].numpy()
+                    print(a, prediction[0][i].numpy()*100, '%')
+                    if prob < 0.9:
+                        a = "nothing"
 
                     if a != current_a:
                         action_dict[current_a].finish()
@@ -71,7 +75,12 @@ def main():
                     action_dict[current_a].execute(lm_coords, canvases, image)
 
             for canvas in canvases:
+                gray_img = cv2.cvtColor(canvas, cv2.COLOR_BGR2GRAY)
+                _, inv = cv2.threshold(gray_img, 50, 255, cv2.THRESH_BINARY_INV)
+                inv = cv2.cvtColor(inv, cv2.COLOR_GRAY2BGR)
+                image = cv2.bitwise_and(image, inv)
                 image = cv2.bitwise_or(image, canvas)
+
             cv2.imshow('Virtual Paint', cv2.flip(image, 1))
             if cv2.waitKey(5) & 0xFF == 27:
                 break
@@ -79,5 +88,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    # train.train("model-3conv", batch_size=64, epochs=5)
+    main("models/model-5conv-gray1", True)

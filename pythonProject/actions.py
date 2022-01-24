@@ -34,10 +34,10 @@ class ChooseColorAction(Action):
         x1 = landmark_coordinates[20][0]
         y1 = landmark_coordinates[12][1]
         y2 = landmark_coordinates[2][1]
-        h = (y2-y1)//len(self.palette)
+        h = (y2 - y1) // len(self.palette)
         for i, col in enumerate(self.palette):
-            cv2.rectangle(img, (x1, y1+i*h), (x1+100, y1+(i+1)*h), col, -1)
-            if y1+i*h <= self.yp < y1+(i+1)*h:
+            cv2.rectangle(img, (x1, y1 + i * h), (x1 + 100, y1 + (i + 1) * h), col, -1)
+            if y1 + i * h <= self.yp < y1 + (i + 1) * h:
                 self.color = col
                 cv2.circle(img, landmark_coordinates[8], 3, self.color, 3)
 
@@ -67,6 +67,8 @@ class DrawAction(Action):
         gray = cv2.cvtColor(self.canvases[1], cv2.COLOR_RGB2GRAY)
         contours, _ = cv2.findContours(gray, cv2.RETR_TREE,
                                        cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            return
         center, (h, w), angle = cv2.minAreaRect(np.squeeze(contours[0], axis=1))
         h = 0 if h < 20 else h - 20
         w = 0 if w < 20 else w - 20
@@ -123,6 +125,8 @@ class SelectAction(Action):
         self.canvas = canvases[2]
         self.x1 = landmark_coordinates[4][0]
         self.x2 = landmark_coordinates[20][0]
+        if self.x1 > self.x2:
+            self.x1, self.x2 = self.x2, self.x1
         self.y1 = landmark_coordinates[12][1]
         self.y2 = landmark_coordinates[0][1]
         cv2.rectangle(img, (self.x1, self.y1), (self.x2, self.y2), (255, 255, 255), 3)
@@ -143,6 +147,7 @@ class MoveAction(Action):
     def execute(self, landmark_coordinates, canvases: list[ndarray], img):
         self.canvases = canvases
         xc, yc = landmark_coordinates[20]
+        print(self.select_action.x1, xc, self.select_action.x2, self.select_action.y1, yc, self.select_action.y2)
         if self.xp == 0 and self.yp == 0 and not (self.select_action.x1 < xc < self.select_action.x2
                                                   and self.select_action.y1 < yc < self.select_action.y2):
             print("AAAAAAAAAAAAA")
@@ -157,7 +162,7 @@ class MoveAction(Action):
         self.yp = yc if yc + h < ch else cw - h
         print(xc, yc)
         try:
-            canvases[1][self.yp:self.yp + h, self.xp:self.xp + w] = self.area
+            canvases[1][self.yp - h // 2:self.yp + h - h // 2, self.xp - w // 2:self.xp + w - w // 2] = self.area
         except ValueError as e:
             print(e)
 

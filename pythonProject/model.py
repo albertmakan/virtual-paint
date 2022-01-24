@@ -1,11 +1,11 @@
 from keras.models import Sequential
 from keras.layers.convolutional import Conv2D, MaxPooling2D
-from keras.layers import Dense, Flatten
+from keras.layers import Dense, Flatten, BatchNormalization, Activation, Dropout
 
 
-def create_model():
+def create_model_3conv(gray=False):
     cnn_model = Sequential()
-    cnn_model.add(Conv2D(32, (5, 5), activation='relu', input_shape=(120, 120, 3)))
+    cnn_model.add(Conv2D(32, (5, 5), activation='relu', input_shape=(120, 120, 1 if gray else 3)))
     cnn_model.add(MaxPooling2D((2, 2)))
 
     cnn_model.add(Conv2D(64, (3, 3), activation='relu'))
@@ -20,4 +20,46 @@ def create_model():
     cnn_model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
     cnn_model.summary()
+    return cnn_model
+
+
+def create_model_5conv(gray=False):
+    cnn_model = Sequential()
+    cnn_model.add(Conv2D(8, kernel_size=(3, 3), input_shape=(120, 120, 1 if gray else 3), padding='same'))
+    cnn_model.add(BatchNormalization())
+    cnn_model.add(Activation('relu'))
+
+    cnn_model.add(Conv2D(16, (3, 3), padding='same'))
+    cnn_model.add(Activation('relu'))
+    cnn_model.add(BatchNormalization())
+    cnn_model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    cnn_model.add(Conv2D(32, (2, 2), padding='same'))
+    cnn_model.add(Activation('relu'))
+    cnn_model.add(BatchNormalization())
+    cnn_model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    cnn_model.add(Conv2D(64, (2, 2), padding='same'))
+    cnn_model.add(Activation('relu'))
+    cnn_model.add(BatchNormalization())
+    cnn_model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    cnn_model.add(Conv2D(128, (2, 2), padding='same'))
+    cnn_model.add(Activation('relu'))
+    cnn_model.add(BatchNormalization())
+    cnn_model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    cnn_model.add(Flatten())
+
+    cnn_model.add(Dense(512, activation='relu'))
+    cnn_model.add(Dropout(0.5))
+
+    cnn_model.add(Dense(256, activation='relu'))
+    cnn_model.add(Dropout(0.5))
+
+    cnn_model.add(Dense(6, activation='softmax'))
+    cnn_model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+    cnn_model.summary()
+
     return cnn_model

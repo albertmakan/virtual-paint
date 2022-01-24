@@ -33,15 +33,16 @@ def main():
 
             if results.multi_hand_landmarks:
                 for hand_landmarks in results.multi_hand_landmarks:
-                    hand_img = extract_hand(hand_landmarks, image)
+                    hand_img = extract_hand(hand_landmarks, image, gray=True)
                     cv2.imwrite(f"{path}/{n}.png", hand_img)
                     n += 1
+                    print(n)
 
             cv2.imshow('Creating dataset', cv2.flip(image, 1))
             if cv2.waitKey(5) & 0xFF == 27:
                 break
     capture.release()
-    print(n)
+
 
 if __name__ == '__main__':
     main()
