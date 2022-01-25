@@ -82,9 +82,9 @@ class DrawAction(Action):
         cv2.ellipse(gray1, (center, (h, w), angle), 0, 10)
         nz3 = np.count_nonzero(gray1)
 
-        if nz3 < nz1 * 0.4:
+        if nz3 < nz1 * 0.5:
             cv2.ellipse(self.canvases[0], (center, (h, w), angle), self.color_action.color, 10)
-        elif nz2 < nz1 * 0.4:
+        elif nz2 < nz1 * 0.3:
             cv2.drawContours(self.canvases[0], [box], 0, self.color_action.color, 10)
         else:
             self.canvases[0] += self.canvases[1]
@@ -97,8 +97,12 @@ class EraseAction(Action):
     def __init__(self):
         self.xp = 0
         self.yp = 0
+        self.n = 0
 
     def execute(self, landmark_coordinates, canvases: list[ndarray], img):
+        self.n += 1
+        if self.n < 5:
+            return
         xc, yc = landmark_coordinates[4]  # thumb tip
         cv2.circle(img, (xc, yc), 50, (0, 0, 0), -1)
         if self.xp == 0 and self.yp == 0:
@@ -111,6 +115,7 @@ class EraseAction(Action):
     def finish(self):
         self.xp = 0
         self.yp = 0
+        self.n = 0
 
 
 class SelectAction(Action):
@@ -147,10 +152,9 @@ class MoveAction(Action):
     def execute(self, landmark_coordinates, canvases: list[ndarray], img):
         self.canvases = canvases
         xc, yc = landmark_coordinates[20]
-        print(self.select_action.x1, xc, self.select_action.x2, self.select_action.y1, yc, self.select_action.y2)
         if self.xp == 0 and self.yp == 0 and not (self.select_action.x1 < xc < self.select_action.x2
                                                   and self.select_action.y1 < yc < self.select_action.y2):
-            print("AAAAAAAAAAAAA")
+            print("not moving anything")
             return
         if self.area is None:
             self.area = canvases[0][self.select_action.y1:self.select_action.y2,
@@ -160,7 +164,6 @@ class MoveAction(Action):
         ch, cw, _ = canvases[1].shape
         self.xp = xc if xc + w < cw else cw - w
         self.yp = yc if yc + h < ch else cw - h
-        print(xc, yc)
         try:
             canvases[1][self.yp - h // 2:self.yp + h - h // 2, self.xp - w // 2:self.xp + w - w // 2] = self.area
         except ValueError as e:

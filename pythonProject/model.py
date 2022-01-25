@@ -1,9 +1,9 @@
 from keras.models import Sequential
 from keras.layers.convolutional import Conv2D, MaxPooling2D
-from keras.layers import Dense, Flatten, BatchNormalization, Activation, Dropout
+from keras.layers import Dense, Flatten, BatchNormalization, Dropout
 
 
-def create_model_3conv(gray=False):
+def create_model_small(gray=False):
     cnn_model = Sequential()
     cnn_model.add(Conv2D(32, (5, 5), activation='relu', input_shape=(120, 120, 1 if gray else 3)))
     cnn_model.add(MaxPooling2D((2, 2)))
@@ -13,6 +13,7 @@ def create_model_3conv(gray=False):
 
     cnn_model.add(Conv2D(64, (3, 3), activation='relu'))
     cnn_model.add(MaxPooling2D((2, 2)))
+
     cnn_model.add(Flatten())
 
     cnn_model.add(Dense(128, activation='relu'))
@@ -23,31 +24,26 @@ def create_model_3conv(gray=False):
     return cnn_model
 
 
-def create_model_5conv(gray=False):
+def create_model_large(gray=False):
     cnn_model = Sequential()
-    cnn_model.add(Conv2D(8, kernel_size=(3, 3), input_shape=(120, 120, 1 if gray else 3), padding='same'))
+    cnn_model.add(Conv2D(8, (3, 3), activation='relu', input_shape=(120, 120, 1 if gray else 3)))
     cnn_model.add(BatchNormalization())
-    cnn_model.add(Activation('relu'))
 
-    cnn_model.add(Conv2D(16, (3, 3), padding='same'))
-    cnn_model.add(Activation('relu'))
+    cnn_model.add(Conv2D(16, (3, 3), activation='relu'))
     cnn_model.add(BatchNormalization())
-    cnn_model.add(MaxPooling2D(pool_size=(2, 2)))
+    cnn_model.add(MaxPooling2D((2, 2)))
 
-    cnn_model.add(Conv2D(32, (2, 2), padding='same'))
-    cnn_model.add(Activation('relu'))
+    cnn_model.add(Conv2D(32, (2, 2), activation='relu'))
     cnn_model.add(BatchNormalization())
-    cnn_model.add(MaxPooling2D(pool_size=(2, 2)))
+    cnn_model.add(MaxPooling2D((2, 2)))
 
-    cnn_model.add(Conv2D(64, (2, 2), padding='same'))
-    cnn_model.add(Activation('relu'))
+    cnn_model.add(Conv2D(64, (2, 2), activation='relu'))
     cnn_model.add(BatchNormalization())
-    cnn_model.add(MaxPooling2D(pool_size=(2, 2)))
+    cnn_model.add(MaxPooling2D((2, 2)))
 
-    cnn_model.add(Conv2D(128, (2, 2), padding='same'))
-    cnn_model.add(Activation('relu'))
+    cnn_model.add(Conv2D(128, (2, 2), activation='relu'))
     cnn_model.add(BatchNormalization())
-    cnn_model.add(MaxPooling2D(pool_size=(2, 2)))
+    cnn_model.add(MaxPooling2D((2, 2)))
 
     cnn_model.add(Flatten())
 

@@ -3,7 +3,6 @@ import mediapipe as mp
 import numpy as np
 from keras.models import load_model
 import actions
-import train
 import utils
 
 
@@ -24,7 +23,7 @@ def main(model_path: str, gray=False):
     na = actions.NoAction()
     ma = actions.MoveAction(sa)
     action_dict = {"draw": da, "erase": ea, "select": sa, "nothing": na, "move": ma, "choose": ca}
-    labels = ["choose", "draw", "erase", "move", "nothing", "select"]
+    labels = sorted(list(action_dict.keys()))
 
     model = load_model(model_path)
 
@@ -76,7 +75,7 @@ def main(model_path: str, gray=False):
 
             for canvas in canvases:
                 gray_img = cv2.cvtColor(canvas, cv2.COLOR_BGR2GRAY)
-                _, inv = cv2.threshold(gray_img, 50, 255, cv2.THRESH_BINARY_INV)
+                _, inv = cv2.threshold(gray_img, 1, 255, cv2.THRESH_BINARY_INV)
                 inv = cv2.cvtColor(inv, cv2.COLOR_GRAY2BGR)
                 image = cv2.bitwise_and(image, inv)
                 image = cv2.bitwise_or(image, canvas)
@@ -88,4 +87,4 @@ def main(model_path: str, gray=False):
 
 
 if __name__ == '__main__':
-    main("models/model-5conv-gray1", True)
+    main("models/model-large-gray.h5", True)
